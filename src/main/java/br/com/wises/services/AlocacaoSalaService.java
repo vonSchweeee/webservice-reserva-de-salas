@@ -137,7 +137,7 @@ public class AlocacaoSalaService {
                 alocacao.setAtivo(true);
 
 
-                EManager.getInstance().getDbAccessor().novaAlocacao(alocacao);
+                EManager.getInstance().getDbAccessor().novaAlocacao(alocacao, usuario);
                 return "Alocação realizada com sucesso";
             } else {
                 return "Dados incorretos.";
@@ -155,7 +155,10 @@ public class AlocacaoSalaService {
         @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")){
             try {
-                EManager.getInstance().getDbAccessor().setAlocacaoInativa(id);
+                AlocacaoSala alocacao = new AlocacaoSala();
+                alocacao = EManager.getInstance().getDbAccessor().getAlocacaoSalaById(id);
+                alocacao.setAtivo(false);
+                EManager.getInstance().getDbAccessor().setAlocacaoInativa(alocacao);
                 return "Alocação desativada com sucesso.";
             }
             catch (Exception e) {
