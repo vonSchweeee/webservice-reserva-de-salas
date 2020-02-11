@@ -54,7 +54,7 @@ public class Usuario implements Serializable {
     @Column(name = "email")
     private String email;
     @Size(max = 256)
-    @Column(name = "senha")
+    @Column(name = "senha", nullable=false)
     private String senha;
     @OneToMany(mappedBy = "idUsuario")
     private Collection<AlocacaoSala> alocacaoSalaCollection;

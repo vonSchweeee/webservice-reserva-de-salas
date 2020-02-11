@@ -47,15 +47,32 @@ CREATE TABLE `alocacao_sala` (
  `id` int NOT NULL AUTO_INCREMENT,
  `id_sala` int DEFAULT NULL,
  `id_usuario` int DEFAULT NULL,
- `id_organizacao` int DEFAULT NULL,
  `dataHoraInicio` DATETIME DEFAULT NULL,
  `dataHoraFim` DATETIME DEFAULT NULL,
 `descricao` VARCHAR(45) DEFAULT NULL,
  `ativo` tinyint(1) DEFAULT '1',
- `dataCriacao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
- `dataAlteracao` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+ `dataCriacao` timestamp DEFAULT CURRENT_TIMESTAMP,
+ `dataAlteracao` timestamp DEFAULT CURRENT_TIMESTAMP,
  PRIMARY KEY (`id`),
  FOREIGN KEY (`id_sala`) REFERENCES `sala` (`id`),
  FOREIGN KEY (`id_usuario`) REFERENCES `usuario` (`id`),
  FOREIGN KEY (`id_organizacao`) REFERENCES `organizacao` (`id`)
 );
+DELIMITER $
+
+CREATE TRIGGER Tgr_Alocacao_Sala_Insert AFTER INSERT
+ON alocacao_sala
+FOR EACH ROW
+BEGIN
+    UPDATE alocacao_sala SET dataCriacao = CURRENT_TIMESTAMP WHERE id = NEW.id;
+    UPDATE alocacao_sala SET dataAlteracao = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END$
+
+CREATE TRIGGER Tgr_Alocacao_Sala_Update AFTER UPDATE
+ON alocacao_sala
+FOR EACH ROW
+BEGIN
+    UPDATE alocacao_sala SET dataAlteracao = CURRENT_TIMESTAMP WHERE id = NEW.id;
+END$
+ 
+ DELIMITER ;
