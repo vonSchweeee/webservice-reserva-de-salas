@@ -52,7 +52,16 @@ public class DbAccessor {
             return null;
         }
     }
+    
 
+    public void setAlocacaoInativa (AlocacaoSala alocacao) {
+        synchronized (this.operationLock) {
+            this.manager.getTransaction().begin();
+            this.manager.merge(alocacao);
+            this.manager.getTransaction().commit();
+        }
+    }
+    
     public List<Organizacao> getAllOrganizacoes() {
         return this.manager.createNamedQuery("Organizacao.findAll").getResultList();
     }
@@ -70,6 +79,13 @@ public class DbAccessor {
             return (Organizacao) this.manager.createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getSingleResult();
         } catch (NoResultException e) {
             return null;
+        }
+    }
+        public void novoUsuario(Usuario usuario) {
+        synchronized (this.operationLock) {
+            this.manager.getTransaction().begin();
+            this.manager.persist(usuario);
+            this.manager.getTransaction().commit();
         }
     }
 
@@ -155,19 +171,15 @@ public class DbAccessor {
         }
     }
     
-    public void novoUsuario(Usuario usuario) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.persist(usuario);
-            this.manager.getTransaction().commit();
-        }
-    }
     
-    public void setAlocacaoInativa (AlocacaoSala alocacao) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.merge(alocacao);
-            this.manager.getTransaction().commit(); 
+    
+    public String verificarConsistenciaAlocacao (Date dataHoraInicio, Date dataHoraFim, int idSala){
+        int retornos = this.manager.createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList().size();
+        if (retornos == 0) {
+            return "validado";
+        }
+        else {
+            return "invalido";
         }
     }
 //

@@ -78,7 +78,11 @@ public class AlocacaoSalaService {
             return null;
         }
     }
-   
+    
+    public String verificarConsistencia (Date inicio, Date fim, int idSala) {
+        String retorno = EManager.getInstance().getDbAccessor().verificarConsistenciaAlocacao(inicio, fim, idSala);
+        return retorno;
+    }
     
     @POST
     @Path("reservar")
@@ -117,8 +121,13 @@ public class AlocacaoSalaService {
                     if (sala == null) {
                         return "Erro ao realizar a alocação, a sala informada não existe.";
                     }
+                    String validade = verificarConsistencia(dataHoraInicio, dataHoraFim, idSala);
+                    if (! validade.equals("validado"))
+                    {
+                        return "Alocação conflita em horário com outra alocação.";
+                    }
                 } catch (Exception e) {
-                    return "Erro ao realizar a alocação, os dados estão incorretos.";
+                    return e.getMessage();
                 }
                 
                 alocacao.setIdSala(sala);
@@ -146,6 +155,7 @@ public class AlocacaoSalaService {
             return "Token inválido.";
         }
     }
+    
     
     @DELETE
     @Path("excluir")
