@@ -19,7 +19,7 @@ public class SalaService {
             @HeaderParam("idOrganizacao") int idOrganizacao,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
-            List<Sala> lista = EManager.getInstance().getDbAccessor().getSalasByOrganizacaoId(idOrganizacao);
+            List<Sala> lista = EManager.getInstance().getSalaAccessor().getSalasByOrganizacaoId(idOrganizacao);
             for (int i = 0; i < lista.size(); i++) {
                 lista.get(i).getIdOrganizacao().setSalaCollection(null);
                 lista.get(i).getIdOrganizacao().setUsuarioCollection(null);
@@ -37,7 +37,7 @@ public class SalaService {
             @HeaderParam("idOrganizacao") int idOrganizacao,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
-            List<Sala> lista = EManager.getInstance().getDbAccessor().getSalasByOrganizacaoId(idOrganizacao);
+            List<Sala> lista = EManager.getInstance().getSalaAccessor().getSalasByOrganizacaoId(idOrganizacao);
             for (int i = 0; i < lista.size(); i++) {
                 lista.get(i).getIdOrganizacao().setSalaCollection(null);
                 lista.get(i).getIdOrganizacao().setUsuarioCollection(null);

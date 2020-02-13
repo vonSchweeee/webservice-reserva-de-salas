@@ -25,7 +25,7 @@ public class UsuarioService {
             @HeaderParam("email") String email,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
-            Usuario user = EManager.getInstance().getDbAccessor().getUserByEmail(email);
+            Usuario user = EManager.getInstance().getUsuarioAccessor().getUserByEmail(email);
             if (user != null) {
                 user.getIdOrganizacao().setUsuarioCollection(null);
                 user.getIdOrganizacao().setSalaCollection(null);
@@ -49,7 +49,7 @@ public class UsuarioService {
             @HeaderParam("password") String password,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
-            Usuario user = EManager.getInstance().getDbAccessor().getCredencials(email, password);
+            Usuario user = EManager.getInstance().getUsuarioAccessor().getCredencials(email, password);
             if (user != null) {
                 return "Login efetuado com sucesso!";
             } else {
@@ -92,13 +92,13 @@ public class UsuarioService {
                     return "Erro ao criar conta, os dados enviados estão incompletos";
                 }
 
-                if (EManager.getInstance().getDbAccessor().getUserByEmail(email) != null) {
+                if (EManager.getInstance().getUsuarioAccessor().getUserByEmail(email) != null) {
                     return "O email informado já está cadastrado";
                 }
 
                 Organizacao organizacao = new Organizacao();
                 try {
-                    organizacao = EManager.getInstance().getDbAccessor().getOrganizacaoById(idOrganizacao);
+                    organizacao = EManager.getInstance().getOrganizacaoAccessor().getOrganizacaoById(idOrganizacao);
                     if (organizacao == null) {
                         return "Erro ao cadastrar usuário, a organização informada não existe";
                     }
@@ -111,7 +111,7 @@ public class UsuarioService {
                 novoUsuario.setSenha(senha);
                 novoUsuario.setIdOrganizacao(organizacao);
 
-                EManager.getInstance().getDbAccessor().novoUsuario(novoUsuario);
+                EManager.getInstance().getUsuarioAccessor().novoUsuario(novoUsuario);
 
                 return "Usuário criado com sucesso";
             } catch (Exception e) {
