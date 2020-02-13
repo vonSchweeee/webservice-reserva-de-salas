@@ -49,7 +49,8 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Sala.findByAtivo", query = "SELECT s FROM Sala s WHERE s.ativo = :ativo"),
     @NamedQuery(name = "Sala.findByDataCriacao", query = "SELECT s FROM Sala s WHERE s.dataCriacao = :dataCriacao"),
     @NamedQuery(name = "Sala.findByDataAlteracao", query = "SELECT s FROM Sala s WHERE s.dataAlteracao = :dataAlteracao"),
-    @NamedQuery(name = "Sala.findByOrganizacaoId", query = "SELECT s FROM Sala s JOIN s.idOrganizacao o WHERE o.id = :idOrganizacao")
+    @NamedQuery(name = "Sala.findByOrganizacaoId", query = "SELECT s FROM Sala s JOIN s.idOrganizacao o WHERE o.id = :idOrganizacao"),
+    @NamedQuery(name = "Sala.findByUrlImagem", query = "SELECT s FROM Sala s WHERE s.urlImagem = :urlImagem")
     })
 public class Sala implements Serializable {
 
@@ -86,6 +87,9 @@ public class Sala implements Serializable {
     @Column(name = "dataAlteracao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataAlteracao;
+    @Size(max = 300)
+    @Column(name = "urlImagem")
+    private String urlImagem;
     @OneToMany(mappedBy = "idSala")
     private Collection<AlocacaoSala> alocacaoSalaCollection;
     @JoinColumn(name = "id_organizacao", referencedColumnName = "id")
@@ -193,6 +197,14 @@ public class Sala implements Serializable {
 
     public void setDataAlteracao(Date dataAlteracao) {
         this.dataAlteracao = dataAlteracao;
+    }
+    
+    public String getUrlImagem() {
+        return urlImagem;
+    }
+
+    public void setUrlImagem(String urlImagem) {
+        this.urlImagem = urlImagem;
     }
 
     @XmlTransient

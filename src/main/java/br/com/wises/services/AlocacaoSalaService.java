@@ -38,7 +38,7 @@ public class AlocacaoSalaService {
     @Path("alocacoes")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public List<AlocacaoSala> getAllAlocacaoSalas() {
-        List<AlocacaoSala> lista = EManager.getInstance().getDbAccessor().getAllAlocacaoSalas();
+        List<AlocacaoSala> lista = EManager.getInstance().getAlocacaoSalaAccessor().getAllAlocacaoSalas();
         for (int i = 0; i < lista.size(); i++) {
             lista.get(i).getIdSala().setAlocacaoSalaCollection(null);
             lista.get(i).getIdUsuario().setAlocacaoSalaCollection(null);
@@ -59,7 +59,7 @@ public class AlocacaoSalaService {
             @HeaderParam("fimDiaEscolhido") String fimDiaEscolhido){
         
         if (authorization != null && authorization.equals("secret")) {
-            List<AlocacaoSala> lista = EManager.getInstance().getDbAccessor().getAlocacaoSalasByIdSalaAndData(id, data, fimDiaEscolhido);
+            List<AlocacaoSala> lista = EManager.getInstance().getAlocacaoSalaAccessor().getAlocacaoSalasByIdSalaAndData(id, data, fimDiaEscolhido);
             for (int i = 0; i < lista.size(); i++) {
                 lista.get(i).getIdSala().setAlocacaoSalaCollection(null);
                 lista.get(i).getIdUsuario().setAlocacaoSalaCollection(null);
@@ -78,7 +78,11 @@ public class AlocacaoSalaService {
             return null;
         }
     }
-   
+    
+    public String verificarConsistencia (Date inicio, Date fim, int idSala) {
+        String retorno = EManager.getInstance().getAlocacaoSalaAccessor().verificarConsistenciaAlocacao(inicio, fim, idSala);
+        return retorno;
+    }
     
     @POST
     @Path("reservar")
@@ -109,16 +113,21 @@ public class AlocacaoSalaService {
                 Sala sala = new Sala();
                 Usuario usuario = new Usuario();
                 try {
-                    usuario = EManager.getInstance().getDbAccessor().getUserById(idUsuario);
-                    sala = EManager.getInstance().getDbAccessor().getSalaById(idSala);
+                    usuario = EManager.getInstance().getUsuarioAccessor().getUserById(idUsuario);
+                    sala = EManager.getInstance().getSalaAccessor().getSalaById(idSala);
                     if (usuario == null) {
                         return "Erro ao realizar a alocação, o usuário informado não existe.";
                     }
                     if (sala == null) {
                         return "Erro ao realizar a alocação, a sala informada não existe.";
                     }
+                    String validade = verificarConsistencia(dataHoraInicio, dataHoraFim, idSala);
+                    if (! validade.equals("validado"))
+                    {
+                        return "Alocação conflita em horário com outra alocação.";
+                    }
                 } catch (Exception e) {
-                    return "Erro ao realizar a alocação, os dados estão incorretos.";
+                    return e.getMessage();
                 }
                 
                 alocacao.setIdSala(sala);
@@ -137,7 +146,7 @@ public class AlocacaoSalaService {
                 alocacao.setAtivo(true);
 
 
-                EManager.getInstance().getDbAccessor().novaAlocacao(alocacao);
+                EManager.getInstance().getAlocacaoSalaAccessor().novaAlocacao(alocacao, usuario);
                 return "Alocação realizada com sucesso";
             } else {
                 return "Dados incorretos.";
@@ -147,6 +156,7 @@ public class AlocacaoSalaService {
         }
     }
     
+    
     @DELETE
     @Path("excluir")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
@@ -155,7 +165,10 @@ public class AlocacaoSalaService {
         @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")){
             try {
-                EManager.getInstance().getDbAccessor().setAlocacaoInativa(id);
+                AlocacaoSala alocacao = new AlocacaoSala();
+                alocacao = EManager.getInstance().getAlocacaoSalaAccessor().getAlocacaoSalaById(id);
+                alocacao.setAtivo(false);
+                EManager.getInstance().getAlocacaoSalaAccessor().setAlocacaoInativa(alocacao);
                 return "Alocação desativada com sucesso.";
             }
             catch (Exception e) {

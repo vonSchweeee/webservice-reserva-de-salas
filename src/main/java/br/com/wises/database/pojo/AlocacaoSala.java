@@ -22,7 +22,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
-
 /**
  *
  * @author jvito
@@ -41,8 +40,9 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "AlocacaoSala.findByDataAlteracao", query = "SELECT a FROM AlocacaoSala a WHERE a.dataAlteracao = :dataAlteracao"),
     @NamedQuery(name = "AlocacaoSala.findBySalaId", query = "SELECT a FROM AlocacaoSala a JOIN a.idSala s WHERE s.id = :idSala"),
     @NamedQuery(name = "AlocacaoSala.findByUsuarioId", query = "SELECT a FROM AlocacaoSala a JOIN a.idUsuario u WHERE u.id = :idUsuario"),
-    @NamedQuery(name = "AlocacaoSala.findBySalaIdDataHoraInicio", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND a.dataHoraInicio >= :diaEscolhido AND a.dataHoraInicio < :fimDiaEscolhido"),
-    @NamedQuery(name = "AlocacaoSala.setAlocacaoInativa", query = "UPDATE AlocacaoSala a SET a.ativo = false WHERE a.id = :id")
+    @NamedQuery(name = "AlocacaoSala.findBySalaIdDataHoraInicio", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND a.dataHoraInicio >= :diaEscolhido AND a.dataHoraInicio < :fimDiaEscolhido AND a.ativo = true"),
+    @NamedQuery(name = "AlocacaoSala.setAlocacaoInativa", query = "UPDATE AlocacaoSala a SET a.ativo = false WHERE a.id = :id"),
+    @NamedQuery(name = "AlocacaoSala.verificarConsistencia", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND :dataHoraInicio >= a.dataHoraInicio AND :dataHoraFim <= a.dataHoraFim and a.ativo = true")
     })
 public class AlocacaoSala implements Serializable {
 
@@ -74,7 +74,6 @@ public class AlocacaoSala implements Serializable {
     private Sala idSala;
     @JoinColumn(name = "id_usuario", referencedColumnName = "id")
     @ManyToOne
-    
     private Usuario idUsuario;
     
     

@@ -16,12 +16,19 @@ public class EManager implements java.io.Serializable {
     private static final Object operationLock = new Object();
 
     private final DbAccessor dbAccessor;
-
+    private final AlocacaoSalaAccessor alocacaoSalaAccessor;
+    private final SalaAccessor salaAccessor;
+    private final OrganizacaoAccessor organizacaoAccessor;
+    private final UsuarioAccessor usuarioAccessor;
     private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("ReservaDeSalasPU");
 
     public EManager() {
         this.em = Persistence.createEntityManagerFactory("ReservaDeSalasPU").createEntityManager();
         this.dbAccessor = new DbAccessor(this.em, this.operationLock);
+        this.alocacaoSalaAccessor = new AlocacaoSalaAccessor(this.em, this.operationLock);
+        this.salaAccessor = new SalaAccessor(this.em, this.operationLock);
+        this.organizacaoAccessor = new OrganizacaoAccessor(this.em, this.operationLock);
+        this.usuarioAccessor = new UsuarioAccessor(this.em, this.operationLock);
     }
 
     public static EManager getInstance() {
@@ -38,5 +45,20 @@ public class EManager implements java.io.Serializable {
     public DbAccessor getDbAccessor() {
         return dbAccessor;
     }
+    
+    public AlocacaoSalaAccessor getAlocacaoSalaAccessor(){
+        return alocacaoSalaAccessor;
+    }
 
+    public SalaAccessor getSalaAccessor(){
+        return salaAccessor;
+    }
+    
+    public OrganizacaoAccessor getOrganizacaoAccessor(){
+        return organizacaoAccessor;
+    }
+    
+    public UsuarioAccessor getUsuarioAccessor(){
+        return usuarioAccessor;
+    }
 }

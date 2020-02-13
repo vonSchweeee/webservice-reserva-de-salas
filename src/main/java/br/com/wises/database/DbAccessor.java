@@ -52,7 +52,16 @@ public class DbAccessor {
             return null;
         }
     }
+    
 
+    public void setAlocacaoInativa (AlocacaoSala alocacao) {
+        synchronized (this.operationLock) {
+            this.manager.getTransaction().begin();
+            this.manager.merge(alocacao);
+            this.manager.getTransaction().commit();
+        }
+    }
+    
     public List<Organizacao> getAllOrganizacoes() {
         return this.manager.createNamedQuery("Organizacao.findAll").getResultList();
     }
@@ -70,6 +79,13 @@ public class DbAccessor {
             return (Organizacao) this.manager.createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getSingleResult();
         } catch (NoResultException e) {
             return null;
+        }
+    }
+        public void novoUsuario(Usuario usuario) {
+        synchronized (this.operationLock) {
+            this.manager.getTransaction().begin();
+            this.manager.persist(usuario);
+            this.manager.getTransaction().commit();
         }
     }
 
@@ -120,6 +136,14 @@ public class DbAccessor {
             return null;
         }
     }
+    public AlocacaoSala getAlocacaoSalaById (int id) {
+        try {
+            return (AlocacaoSala) this.manager.createNamedQuery("AlocacaoSala.findById").setParameter("id", id).getSingleResult();      
+                    }
+        catch (Exception e) {
+            return null;
+        }
+    }
     
     public List<AlocacaoSala> getAlocacaoSalasByIdSalaAndData(int id, String dataRaw, String fimDiaRaw) {
         try {
@@ -138,24 +162,25 @@ public class DbAccessor {
         }
     }
     
-        public void novaAlocacao (AlocacaoSala alocacao) {
+        public void novaAlocacao (AlocacaoSala alocacao, Usuario usuario) {
         synchronized (this.operationLock) {
             this.manager.getTransaction().begin();
             this.manager.persist(alocacao);
+            this.manager.merge(usuario);
             this.manager.getTransaction().commit();
         }
     }
     
-    public void novoUsuario(Usuario usuario) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.persist(usuario);
-            this.manager.getTransaction().commit();
-        }
-    }
     
-    public void setAlocacaoInativa (int id) {
-        this.manager.createNamedQuery("AlocacaoSala.setAlocacaoInativa").setParameter("id", id);
+    
+    public String verificarConsistenciaAlocacao (Date dataHoraInicio, Date dataHoraFim, int idSala){
+        int retornos = this.manager.createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList().size();
+        if (retornos == 0) {
+            return "validado";
+        }
+        else {
+            return "invalido";
+        }
     }
 //
 //    public void modificaUsuario(Usuario usuario) {
