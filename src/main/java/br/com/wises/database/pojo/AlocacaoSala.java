@@ -39,10 +39,10 @@ import javax.xml.bind.annotation.XmlRootElement;
     @NamedQuery(name = "AlocacaoSala.findByDataCriacao", query = "SELECT a FROM AlocacaoSala a WHERE a.dataCriacao = :dataCriacao"),
     @NamedQuery(name = "AlocacaoSala.findByDataAlteracao", query = "SELECT a FROM AlocacaoSala a WHERE a.dataAlteracao = :dataAlteracao"),
     @NamedQuery(name = "AlocacaoSala.findBySalaId", query = "SELECT a FROM AlocacaoSala a JOIN a.idSala s WHERE s.id = :idSala"),
-    @NamedQuery(name = "AlocacaoSala.findByUsuarioId", query = "SELECT a FROM AlocacaoSala a JOIN a.idUsuario u WHERE u.id = :idUsuario"),
-    @NamedQuery(name = "AlocacaoSala.findBySalaIdDataHoraInicio", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND a.dataHoraInicio >= :diaEscolhido AND a.dataHoraInicio < :fimDiaEscolhido AND a.ativo = true"),
+    @NamedQuery(name = "AlocacaoSala.findByUsuarioId", query = "SELECT a FROM AlocacaoSala a WHERE a.idUsuario = :idUsuario"),
+    @NamedQuery(name = "AlocacaoSala.findBySalaIdDataHoraInicio", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND a.dataHoraInicio >= :diaEscolhido AND a.dataHoraInicio < :fimDiaEscolhido AND a.ativo = true ORDER BY a.dataHoraFim"),
     @NamedQuery(name = "AlocacaoSala.setAlocacaoInativa", query = "UPDATE AlocacaoSala a SET a.ativo = false WHERE a.id = :id"),
-    @NamedQuery(name = "AlocacaoSala.verificarConsistencia", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND :dataHoraInicio >= a.dataHoraInicio AND :dataHoraFim <= a.dataHoraFim and a.ativo = true")
+    @NamedQuery(name = "AlocacaoSala.verificarConsistencia", query = "SELECT a FROM AlocacaoSala a Join a.idSala s WHERE s.id = :idSala AND (:dataHoraInicio BETWEEN a.dataHoraInicio AND a.dataHoraFim OR :dataHoraFim BETWEEN a.dataHoraInicio AND a.dataHoraFim) AND a.ativo = true")
     })
 public class AlocacaoSala implements Serializable {
 
@@ -72,9 +72,8 @@ public class AlocacaoSala implements Serializable {
     @JoinColumn(name = "id_sala", referencedColumnName = "id")
     @ManyToOne
     private Sala idSala;
-    @JoinColumn(name = "id_usuario", referencedColumnName = "id")
-    @ManyToOne
-    private Usuario idUsuario;
+    @Column(name = "id_usuario")
+    private int idUsuario;
     
     
     public AlocacaoSala() {
@@ -100,13 +99,15 @@ public class AlocacaoSala implements Serializable {
         this.idSala = idSala;
     }
 
-    public Usuario getIdUsuario() {
+    public int getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
+    public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
     }
+
+    
 
     public Date getDataHoraInicio() {
         return dataHoraInicio;

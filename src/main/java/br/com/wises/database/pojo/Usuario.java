@@ -56,8 +56,6 @@ public class Usuario implements Serializable {
     @Size(max = 256)
     @Column(name = "senha", nullable=false)
     private String senha;
-    @OneToMany(mappedBy = "idUsuario")
-    private Collection<AlocacaoSala> alocacaoSalaCollection;
     @JoinColumns({
         @JoinColumn(name = "id_organizacao", referencedColumnName = "id"),
         @JoinColumn(name = "id_organizacao", referencedColumnName = "id")})
@@ -101,15 +99,6 @@ public class Usuario implements Serializable {
 
     public void setSenha(String senha) {
         this.senha = senha;
-    }
-
-    @XmlTransient
-    public Collection<AlocacaoSala> getAlocacaoSalaCollection() {
-        return alocacaoSalaCollection;
-    }
-
-    public void setAlocacaoSalaCollection(Collection<AlocacaoSala> alocacaoSalaCollection) {
-        this.alocacaoSalaCollection = alocacaoSalaCollection;
     }
 
     public Organizacao getIdOrganizacao() {

@@ -1,5 +1,6 @@
 package br.com.wises.database;
 
+import static br.com.wises.database.DbAccessor.clear;
 import br.com.wises.database.pojo.AlocacaoSala;
 import br.com.wises.database.pojo.Organizacao;
 import br.com.wises.database.pojo.Sala;
@@ -17,56 +18,61 @@ import org.joda.time.DateTime;
 
 public class OrganizacaoAccessor {
 
-    private final EntityManager manager;
-    private final Object operationLock;
 
     public OrganizacaoAccessor(EntityManager manager, Object operationLock) {
-        this.manager = manager;
-        this.operationLock = operationLock;
+
     }
     
-    public List<Organizacao> getAllOrganizacoes() {
-        return this.manager.createNamedQuery("Organizacao.findAll").getResultList();
+    public static List<Organizacao> getAllOrganizacoes() {
+        List<Organizacao> lista = EManager.getInstance().createNamedQuery("Organizacao.findAll").getResultList();
+        return lista;
     }
 
-    public Organizacao getOrganizacaoById(int id) {
+    public static Organizacao getOrganizacaoById(int id) {
         try {
-            return (Organizacao) this.manager.createNamedQuery("Organizacao.findById").setParameter("id", id).getSingleResult();
+            Organizacao o = (Organizacao) EManager.getInstance().createNamedQuery("Organizacao.findById").setParameter("id", id).getSingleResult();
+            clear();
+            return o;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
 
-    public Organizacao getOrganizacaoByDominio(String dominio) {
+    public static Organizacao getOrganizacaoByDominio(String dominio) {
         try {
-            return (Organizacao) this.manager.createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getSingleResult();
+            Organizacao o = (Organizacao) EManager.getInstance().createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getSingleResult();
+            clear();
+            return o;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
 
-    public List<Organizacao> getOrganizacoesByDominio(String dominio) {
+      public static List<Organizacao> getOrganizacoesByDominio(String dominio) {
         try {
-            return this.manager.createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getResultList();
+            List<Organizacao> lista = EManager.getInstance().createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getResultList();
+            clear();
+            return lista;
         } catch (NoResultException e) {
             return null;
         }
     }
-
 //
-//    public void modificaUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.merge(usuario);
-//            this.manager.getTransaction().commit();
+//    public static void modificaUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().merge(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 //
-//    public void excluirUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.remove(usuario);
-//            this.manager.getTransaction().commit();
+//    public static void excluirUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().remove(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 }

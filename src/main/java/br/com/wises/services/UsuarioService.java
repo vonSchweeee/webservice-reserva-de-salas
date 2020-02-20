@@ -1,7 +1,10 @@
 package br.com.wises.services;
 
 import br.com.wises.database.EManager;
+import br.com.wises.database.OrganizacaoAccessor;
+import br.com.wises.database.UsuarioAccessor;
 import br.com.wises.database.pojo.Organizacao;
+import br.com.wises.database.pojo.Status;
 import br.com.wises.database.pojo.Usuario;
 import java.nio.charset.Charset;
 import java.util.Base64;
@@ -13,6 +16,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.json.JSONObject;
 
 @Path("usuario")
@@ -25,12 +29,11 @@ public class UsuarioService {
             @HeaderParam("email") String email,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
-            Usuario user = EManager.getInstance().getUsuarioAccessor().getUserByEmail(email);
+            Usuario user = UsuarioAccessor.getUserByEmail(email);
             if (user != null) {
                 user.getIdOrganizacao().setUsuarioCollection(null);
                 user.getIdOrganizacao().setSalaCollection(null);
                 user.setSenha(null);
-                user.setAlocacaoSalaCollection(null);
                 return user;
             }
         } else {
@@ -38,32 +41,66 @@ public class UsuarioService {
         }
         return null;
     }
-
     
-
+    
+    
     @GET
     @Path("login")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public String authentication(
+    public Response authentication(
             @HeaderParam("email") String email,
             @HeaderParam("password") String password,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
-            Usuario user = EManager.getInstance().getUsuarioAccessor().getCredencials(email, password);
+            Usuario user = UsuarioAccessor.getCredencials(email, password);
             if (user != null) {
-                return "Login efetuado com sucesso!";
+                user.getIdOrganizacao().setUsuarioCollection(null);
+                user.getIdOrganizacao().setSalaCollection(null);
+                user.getIdOrganizacao().setDataAlteracao(null);
+                user.getIdOrganizacao().setDataCriacao(null);
+                user.getIdOrganizacao().setAtivo(null);
+                user.setSenha(null);
+                return Response.ok(user).build();
             } else {
-                return "Credenciais Inválidas!";
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity(new Status("Usuário não encontrado"))
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
             }
         } else {
-            return "Token Inválido";
+            return Response
+                    .status(Response.Status.FORBIDDEN)
+                    .entity(new Status("Request inválido"))
+                    .build();
         }
     }
+
+    
+
+//    @GET
+//    @Path("loginOld")
+//    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
+//    public String authentication(
+//            @HeaderParam("email") String email,
+//            @HeaderParam("password") String password,
+//            @HeaderParam("authorization") String authorization) {
+//        if (authorization != null && authorization.equals("secret")) {
+//            Usuario user = UsuarioAccessor.getUsuarioAccessor().getCredencials(email, password);
+//            if (user != null) {
+//                return "Login efetuado com sucesso!";
+//            } else {
+//                return "Credenciais Inválidas!";
+//            }
+//        } else {
+//            return "Token Inválido";
+//        }
+//    }
 
     @POST
     @Path("cadastro")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public String cadastrarUsuario(@HeaderParam("authorization") String authorization,
+    public Response cadastrarUsuario(@HeaderParam("authorization") String authorization,
             @HeaderParam("novoUsuario") String novoUsuarioEncoded) {
         if (authorization != null && authorization.equals("secret")) {
             try {
@@ -84,26 +121,41 @@ public class UsuarioService {
                     idOrganizacao = userObj.getInt("idOrganizacao");
 
                     if (email.isEmpty() || nome.isEmpty() || senha.isEmpty() || idOrganizacao == 0) {
-                        return "Erro ao criar conta, os dados enviados estão incompletos";
-                    } else if (email.contains("@")) {
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao criar conta, os dados enviados estão incompletos."))
+                                .build();
+                   } else if (email.contains("@")) {
                         dominio = email.split("@")[1];
                     }
                 } else {
-                    return "Erro ao criar conta, os dados enviados estão incompletos";
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao criar conta, os dados enviados estão incompletos."))
+                                .build();
                 }
 
-                if (EManager.getInstance().getUsuarioAccessor().getUserByEmail(email) != null) {
-                    return "O email informado já está cadastrado";
+                if (UsuarioAccessor.getUserByEmail(email) != null) {
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao criar conta, e-mail já cadastrado."))
+                                .build();
                 }
 
                 Organizacao organizacao = new Organizacao();
                 try {
-                    organizacao = EManager.getInstance().getOrganizacaoAccessor().getOrganizacaoById(idOrganizacao);
+                    organizacao = OrganizacaoAccessor.getOrganizacaoById(idOrganizacao);
                     if (organizacao == null) {
-                        return "Erro ao cadastrar usuário, a organização informada não existe";
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao cadastrar usuário, a organização informada não existe."))
+                                .build();
                     }
                 } catch (Exception e) {
-                    return "Erro ao criar conta, os dados enviados estão incompletos";
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao criar conta, os dados enviados estão incompletos."))
+                                .build();
                 }
 
                 novoUsuario.setEmail(email);
@@ -111,16 +163,23 @@ public class UsuarioService {
                 novoUsuario.setSenha(senha);
                 novoUsuario.setIdOrganizacao(organizacao);
 
-                EManager.getInstance().getUsuarioAccessor().novoUsuario(novoUsuario);
+                UsuarioAccessor.novoUsuario(novoUsuario);
 
-                return "Usuário criado com sucesso";
+                return Response.status(Response.Status.CREATED)
+                        .entity(new Status("Usuário criado com sucesso!"))
+                        .build();
             } catch (Exception e) {
                 e.printStackTrace();
-                return "Erro ao criar usuário";
+                        return Response
+                                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                                .entity(new Status("Erro ao criar o usuário."))
+                                .build();  
             }
 
         } else {
-            return "Token inválido";
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity(new Status("Token inválido."))
+                        .build();
         }
     }
 }

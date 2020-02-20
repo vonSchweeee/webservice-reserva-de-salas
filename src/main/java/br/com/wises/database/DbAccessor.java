@@ -17,135 +17,185 @@ import org.joda.time.DateTime;
 
 public class DbAccessor {
 
-    private final EntityManager manager;
-    private final Object operationLock;
 
-    public DbAccessor(EntityManager manager, Object operationLock) {
-        this.manager = manager;
-        this.operationLock = operationLock;
+    public DbAccessor() {
+
     }
 
-    public List<Usuario> getAllUsuarios() {
-        return this.manager.createNamedQuery("Usuario.findAll").getResultList();
+    public static List<Usuario> getAllUsuarios() {
+        List<Usuario> lista =  EManager.getInstance().createNamedQuery("Usuario.findAll").getResultList();
+        clear();
+        return lista;
     }
 
-    public Usuario getUserById(int id) {
+    public static Usuario getUserById(int id) {
         try {
-            return (Usuario) this.manager.createNamedQuery("Usuario.findById").setParameter("id", id).getSingleResult();
+            Usuario u = (Usuario) EManager.getInstance().createNamedQuery("Usuario.findById").setParameter("id", id).getSingleResult();
+            clear();
+            return u;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
 
-    public Usuario getUserByEmail(String email) {
+    public static Usuario getUserByEmail(String email) {
         try {
-            return (Usuario) this.manager.createNamedQuery("Usuario.findByEmail").setParameter("email", email).getSingleResult();
+            Usuario u = (Usuario) EManager.getInstance().createNamedQuery("Usuario.findByEmail").setParameter("email", email).getSingleResult();
+            clear();
+            return u;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
 
-    public Usuario getCredencials(String email, String senha) {
+    public static Usuario getCredencials(String email, String senha) {
         try {
-            return (Usuario) this.manager.createNamedQuery("Usuario.findByEmailAndPassword").setParameter("email", email).setParameter("senha", senha).getSingleResult();
+            Usuario u = (Usuario) EManager.getInstance().createNamedQuery("Usuario.findByEmailAndPassword").setParameter("email", email).setParameter("senha", senha).getSingleResult();
+            clear();
+            return u;
         } catch (NoResultException e) {
-            return null;
-        }
-    }
-    
-
-    public void setAlocacaoInativa (AlocacaoSala alocacao) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.merge(alocacao);
-            this.manager.getTransaction().commit();
-        }
-    }
-    
-    public List<Organizacao> getAllOrganizacoes() {
-        return this.manager.createNamedQuery("Organizacao.findAll").getResultList();
-    }
-
-    public Organizacao getOrganizacaoById(int id) {
-        try {
-            return (Organizacao) this.manager.createNamedQuery("Organizacao.findById").setParameter("id", id).getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
-    }
-
-    public Organizacao getOrganizacaoByDominio(String dominio) {
-        try {
-            return (Organizacao) this.manager.createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getSingleResult();
-        } catch (NoResultException e) {
-            return null;
-        }
-    }
-        public void novoUsuario(Usuario usuario) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.persist(usuario);
-            this.manager.getTransaction().commit();
-        }
-    }
-
-    public List<Organizacao> getOrganizacoesByDominio(String dominio) {
-        try {
-            return this.manager.createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getResultList();
-        } catch (NoResultException e) {
-            return null;
-        }
-    }
-
-    public List<Sala> getAllSalas() {
-        return this.manager.createNamedQuery("Sala.findAll").getResultList();
-    }
-
-    public List<Sala> getSalasByOrganizacaoId(int id) {
-        try {
-            return this.manager.createNamedQuery("Sala.findByOrganizacaoId").setParameter("idOrganizacao", id).getResultList();
-        } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
     
-    public Sala getSalaById(int id) {
+
+    public static void setAlocacaoInativa (AlocacaoSala alocacao) {
         try {
-            return (Sala) this.manager.createNamedQuery("Sala.findById").setParameter("id", id).getSingleResult();
+            EManager.getInstance().getTransaction().begin();
+            EManager.getInstance().merge(alocacao);
+            EManager.getInstance().getTransaction().commit();
+            clear();
+        }
+        catch (Exception e) {
+            if (EManager.getInstance().getTransaction().isActive()) {
+                EManager.getInstance().getTransaction().rollback();
+                clear();
+            }
+        }
+      
+    }
+    
+    public static List<Organizacao> getAllOrganizacoes() {
+        List<Organizacao> lista = EManager.getInstance().createNamedQuery("Organizacao.findAll").getResultList();
+        return lista;
+    }
+
+    public static Organizacao getOrganizacaoById(int id) {
+        try {
+            Organizacao o = (Organizacao) EManager.getInstance().createNamedQuery("Organizacao.findById").setParameter("id", id).getSingleResult();
+            clear();
+            return o;
+        } catch (NoResultException e) {
+            clear();
+            return null;
+        }
+    }
+
+    public static Organizacao getOrganizacaoByDominio(String dominio) {
+        try {
+            Organizacao o = (Organizacao) EManager.getInstance().createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getSingleResult();
+            clear();
+            return o;
+        } catch (NoResultException e) {
+            clear();
+            return null;
+        }
+    }
+        public static void novoUsuario(Usuario usuario) {
+            try {
+                EManager.getInstance().getTransaction().begin();
+                EManager.getInstance().persist(usuario);
+                EManager.getInstance().getTransaction().commit();
+            } 
+            catch (Exception e) {
+                if (EManager.getInstance().getTransaction().isActive()) {
+                    EManager.getInstance().getTransaction().rollback();
+                    clear();
+                }
+            } 
+        }
+    
+
+    public static List<Organizacao> getOrganizacoesByDominio(String dominio) {
+        try {
+            List<Organizacao> lista = EManager.getInstance().createNamedQuery("Organizacao.findDominioLike").setParameter("dominio", dominio).getResultList();
+            clear();
+            return lista;
         } catch (NoResultException e) {
             return null;
         }
     }
 
-    public List<AlocacaoSala> getAllAlocacaoSalas() {
-        return this.manager.createNamedQuery("AlocacaoSala.findAll").getResultList();
+    public static List<Sala> getAllSalas() {
+        List<Sala> lista = EManager.getInstance().createNamedQuery("Sala.findAll").getResultList();
+        clear();
+        return lista;
     }
-    
-    public List<AlocacaoSala> getAlocacaoSalasBySalaId(int id) {
+
+    public static List<Sala> getSalasByOrganizacaoId(int id) {
         try {
-            return this.manager.createNamedQuery("AlocacaoSala.findBySalaId").setParameter("idSala", id).getResultList();
+            List<Sala> lista = EManager.getInstance().createNamedQuery("Sala.findByOrganizacaoId").setParameter("idOrganizacao", id).getResultList();
+            clear();
+            return lista;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
     
-    public List<AlocacaoSala> getAlocacaoSalasByUsuarioId(int id) {
+    public static Sala getSalaById(int id) {
         try {
-            return this.manager.createNamedQuery("AlocacaoSala.findByUsuarioId").setParameter("idSala", id).getResultList();
+            Sala s = (Sala) EManager.getInstance().createNamedQuery("Sala.findById").setParameter("id", id).getSingleResult();
+            clear();
+            return s;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
-    public AlocacaoSala getAlocacaoSalaById (int id) {
+
+    public static List<AlocacaoSala> getAllAlocacaoSalas() {
+        List<AlocacaoSala> lista = EManager.getInstance().createNamedQuery("AlocacaoSala.findAll").getResultList();
+        clear();
+        return lista;
+    }
+    
+    public static List<AlocacaoSala> getAlocacaoSalasBySalaId(int id) {
         try {
-            return (AlocacaoSala) this.manager.createNamedQuery("AlocacaoSala.findById").setParameter("id", id).getSingleResult();      
+            List<AlocacaoSala> lista = EManager.getInstance().createNamedQuery("AlocacaoSala.findBySalaId").setParameter("idSala", id).getResultList();
+            clear();
+            return lista;
+        } catch (NoResultException e) {
+            clear();
+            return null;
+        }
+    }
+    
+    public static List<AlocacaoSala> getAlocacaoSalasByUsuarioId(int id) {
+        try {
+            List<AlocacaoSala> lista = EManager.getInstance().createNamedQuery("AlocacaoSala.findByUsuarioId").setParameter("idSala", id).getResultList(); 
+            clear();
+            return lista;
+        } catch (NoResultException e) {
+            clear();
+            return null;
+        }
+    }
+    public static AlocacaoSala getAlocacaoSalaById (int id) {
+        try {
+            AlocacaoSala aloca = (AlocacaoSala) EManager.getInstance().createNamedQuery("AlocacaoSala.findById").setParameter("id", id).getSingleResult();      
+            return aloca;
                     }
         catch (Exception e) {
+            clear();
             return null;
         }
     }
     
-    public List<AlocacaoSala> getAlocacaoSalasByIdSalaAndData(int id, String dataRaw, String fimDiaRaw) {
+    public static List<AlocacaoSala> getAlocacaoSalasByIdSalaAndData(int id, String dataRaw, String fimDiaRaw) {
         try {
             SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd");
             Date data=null;
@@ -156,46 +206,65 @@ public class DbAccessor {
             } catch (ParseException ex) {
                 Logger.getLogger(DbAccessor.class.getName()).log(Level.SEVERE, null, ex);
             }
-            return this.manager.createNamedQuery("AlocacaoSala.findBySalaIdDataHoraInicio").setParameter("idSala", id).setParameter("diaEscolhido", data, TemporalType.TIMESTAMP).setParameter("fimDiaEscolhido", dataFim, TemporalType.TIMESTAMP).getResultList();
+            List<AlocacaoSala> l =  EManager.getInstance().createNamedQuery("AlocacaoSala.findBySalaIdDataHoraInicio").setParameter("idSala", id).setParameter("diaEscolhido", data, TemporalType.TIMESTAMP).setParameter("fimDiaEscolhido", dataFim, TemporalType.TIMESTAMP).getResultList();
+            clear();
+            return l;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
     
-        public void novaAlocacao (AlocacaoSala alocacao, Usuario usuario) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.persist(alocacao);
-            this.manager.merge(usuario);
-            this.manager.getTransaction().commit();
+        public static void novaAlocacao (AlocacaoSala alocacao, Usuario usuario) {
+        try {
+            EManager.getInstance().getTransaction().begin();
+            EManager.getInstance().persist(alocacao);
+            EManager.getInstance().merge(usuario);
+            EManager.getInstance().getTransaction().commit();
+            clear();
         }
+        catch (Exception e) {
+                if (EManager.getInstance().getTransaction().isActive()) {
+                    EManager.getInstance().getTransaction().rollback();
+                    clear();
+                }
+        } 
     }
     
     
     
-    public String verificarConsistenciaAlocacao (Date dataHoraInicio, Date dataHoraFim, int idSala){
-        int retornos = this.manager.createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList().size();
-        if (retornos == 0) {
-            return "validado";
+    public static String verificarConsistenciaAlocacao (Date dataHoraInicio, Date dataHoraFim, int idSala){
+        try {
+            int retornos = EManager.getInstance().createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList().size();
+            if (retornos == 0) {
+                return "validado";
+            }
+            else {
+                return "invalido";
+            }
         }
-        else {
-            return "invalido";
-        }
+        catch (Exception e) {
+            clear();
+            return null;
+        } 
+    }
+        public static void clear() {
+        EManager.getInstance().clear();
     }
 //
-//    public void modificaUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.merge(usuario);
-//            this.manager.getTransaction().commit();
+//    public staticvoid modificaUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().merge(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 //
-//    public void excluirUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.remove(usuario);
-//            this.manager.getTransaction().commit();
+//    public staticvoid excluirUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().remove(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 }

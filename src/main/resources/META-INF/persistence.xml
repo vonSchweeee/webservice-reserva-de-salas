@@ -6,6 +6,7 @@
     <class>br.com.wises.database.pojo.Organizacao</class>
     <class>br.com.wises.database.pojo.Sala</class>
     <class>br.com.wises.database.pojo.AlocacaoSala</class>
+    <class>br.com.wises.database.pojo.Status</class>
     <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <validation-mode>NONE</validation-mode>
     <properties>

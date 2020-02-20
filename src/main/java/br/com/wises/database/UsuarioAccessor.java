@@ -1,5 +1,6 @@
 package br.com.wises.database;
 
+import static br.com.wises.database.DbAccessor.clear;
 import br.com.wises.database.pojo.AlocacaoSala;
 import br.com.wises.database.pojo.Organizacao;
 import br.com.wises.database.pojo.Sala;
@@ -17,64 +18,76 @@ import org.joda.time.DateTime;
 
 public class UsuarioAccessor {
 
-    private final EntityManager manager;
-    private final Object operationLock;
-
     public UsuarioAccessor(EntityManager manager, Object operationLock) {
-        this.manager = manager;
-        this.operationLock = operationLock;
+
     }
 
-    public List<Usuario> getAllUsuarios() {
-        return this.manager.createNamedQuery("Usuario.findAll").getResultList();
+    public static List<Usuario> getAllUsuarios() {
+        List<Usuario> lista =  EManager.getInstance().createNamedQuery("Usuario.findAll").getResultList();
+        clear();
+        return lista;
     }
 
-    public Usuario getUserById(int id) {
+    public static Usuario getUserById(int id) {
         try {
-            return (Usuario) this.manager.createNamedQuery("Usuario.findById").setParameter("id", id).getSingleResult();
+            Usuario u = (Usuario) EManager.getInstance().createNamedQuery("Usuario.findById").setParameter("id", id).getSingleResult();
+            clear();
+            return u;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
 
-    public Usuario getUserByEmail(String email) {
+    public static Usuario getUserByEmail(String email) {
         try {
-            return (Usuario) this.manager.createNamedQuery("Usuario.findByEmail").setParameter("email", email).getSingleResult();
+            Usuario u = (Usuario) EManager.getInstance().createNamedQuery("Usuario.findByEmail").setParameter("email", email).getSingleResult();
+            clear();
+            return u;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
 
-    public Usuario getCredencials(String email, String senha) {
+    public static Usuario getCredencials(String email, String senha) {
         try {
-            return (Usuario) this.manager.createNamedQuery("Usuario.findByEmailAndPassword").setParameter("email", email).setParameter("senha", senha).getSingleResult();
+            Usuario u = (Usuario) EManager.getInstance().createNamedQuery("Usuario.findByEmailAndPassword").setParameter("email", email).setParameter("senha", senha).getSingleResult();
+            clear();
+            return u;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
-    
-        public void novoUsuario(Usuario usuario) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.persist(usuario);
-            this.manager.getTransaction().commit();
+            public static void novoUsuario(Usuario usuario) {
+            try {
+                EManager.getInstance().getTransaction().begin();
+                EManager.getInstance().persist(usuario);
+                EManager.getInstance().getTransaction().commit();
+            } 
+            catch (Exception e) {
+                if (EManager.getInstance().getTransaction().isActive()) {
+                    EManager.getInstance().getTransaction().rollback();
+                    clear();
+                }
+            } 
         }
-    }
 
 //
-//    public void modificaUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.merge(usuario);
-//            this.manager.getTransaction().commit();
+//    public static void modificaUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().merge(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 //
-//    public void excluirUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.remove(usuario);
-//            this.manager.getTransaction().commit();
+//    public static void excluirUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().remove(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 }

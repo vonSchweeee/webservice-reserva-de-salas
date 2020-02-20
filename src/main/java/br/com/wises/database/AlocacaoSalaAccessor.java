@@ -1,5 +1,6 @@
 package br.com.wises.database;
 
+import static br.com.wises.database.DbAccessor.clear;
 import br.com.wises.database.pojo.AlocacaoSala;
 import br.com.wises.database.pojo.Organizacao;
 import br.com.wises.database.pojo.Sala;
@@ -17,36 +18,64 @@ import org.joda.time.DateTime;
 
 public class AlocacaoSalaAccessor {
 
-    private final EntityManager manager;
-    private final Object operationLock;
 
     public AlocacaoSalaAccessor(EntityManager manager, Object operationLock) {
-        this.manager = manager;
-        this.operationLock = operationLock;
-    }
 
-    public List<AlocacaoSala> getAllAlocacaoSalas() {
-        return this.manager.createNamedQuery("AlocacaoSala.findAll").getResultList();
     }
-
-    public void setAlocacaoInativa (AlocacaoSala alocacao) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.merge(alocacao);
-            this.manager.getTransaction().commit();
+      public static void setAlocacaoInativa (AlocacaoSala alocacao) {
+        try {
+            EManager.getInstance().getTransaction().begin();
+            EManager.getInstance().merge(alocacao);
+            EManager.getInstance().getTransaction().commit();
+            clear();
         }
+        catch (Exception e) {
+            if (EManager.getInstance().getTransaction().isActive()) {
+                EManager.getInstance().getTransaction().rollback();
+                clear();
+            }
+        }
+      }
+   public static List<AlocacaoSala> getAllAlocacaoSalas() {
+        List<AlocacaoSala> lista = EManager.getInstance().createNamedQuery("AlocacaoSala.findAll").getResultList();
+        clear();
+        return lista;
     }
     
-    public AlocacaoSala getAlocacaoSalaById (int id) {
+    public static List<AlocacaoSala> getAlocacaoSalasBySalaId(int id) {
         try {
-            return (AlocacaoSala) this.manager.createNamedQuery("AlocacaoSala.findById").setParameter("id", id).getSingleResult();      
-                    }
-        catch (Exception e) {
+            List<AlocacaoSala> lista = EManager.getInstance().createNamedQuery("AlocacaoSala.findBySalaId").setParameter("idSala", id).getResultList();
+            clear();
+            return lista;
+        } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
     
-    public List<AlocacaoSala> getAlocacaoSalasByIdSalaAndData(int id, String dataRaw, String fimDiaRaw) {
+    public static List<AlocacaoSala> getAlocacaoSalasByUsuarioId(int id) {
+        try {
+            List<AlocacaoSala> lista = EManager.getInstance().createNamedQuery("AlocacaoSala.findByUsuarioId").setParameter("idSala", id).getResultList(); 
+            clear();
+            return lista;
+        } catch (NoResultException e) {
+            clear();
+            return null;
+        }
+    }
+    public static AlocacaoSala getAlocacaoSalaById (int id) {
+        try {
+            AlocacaoSala aloca = (AlocacaoSala) EManager.getInstance().createNamedQuery("AlocacaoSala.findById").setParameter("id", id).getSingleResult();      
+            clear();
+            return aloca;
+                    }
+        catch (Exception e) {
+            clear();
+            return null;
+        }
+    }
+    
+    public static List<AlocacaoSala> getAlocacaoSalasByIdSalaAndData(int id, String dataRaw, String fimDiaRaw) {
         try {
             SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd");
             Date data=null;
@@ -55,48 +84,66 @@ public class AlocacaoSalaAccessor {
                 data = formatoData.parse(dataRaw);
                 dataFim = formatoData.parse(fimDiaRaw);
             } catch (ParseException ex) {
-                Logger.getLogger(AlocacaoSalaAccessor.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(DbAccessor.class.getName()).log(Level.SEVERE, null, ex);
             }
-            return this.manager.createNamedQuery("AlocacaoSala.findBySalaIdDataHoraInicio").setParameter("idSala", id).setParameter("diaEscolhido", data, TemporalType.TIMESTAMP).setParameter("fimDiaEscolhido", dataFim, TemporalType.TIMESTAMP).getResultList();
+            List<AlocacaoSala> l =  EManager.getInstance().createNamedQuery("AlocacaoSala.findBySalaIdDataHoraInicio").setParameter("idSala", id).setParameter("diaEscolhido", data, TemporalType.TIMESTAMP).setParameter("fimDiaEscolhido", dataFim, TemporalType.TIMESTAMP).getResultList();
+            clear();
+            return l;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
     
-        public void novaAlocacao (AlocacaoSala alocacao, Usuario usuario) {
-        synchronized (this.operationLock) {
-            this.manager.getTransaction().begin();
-            this.manager.persist(alocacao);
-            this.manager.merge(usuario);
-            this.manager.getTransaction().commit();
+        public static void novaAlocacao (AlocacaoSala alocacao) {
+        try {
+            EManager.getInstance().getTransaction().begin();
+            EManager.getInstance().persist(alocacao);
+            EManager.getInstance().getTransaction().commit();
+            clear();
         }
+        catch (Exception e) {
+                if (EManager.getInstance().getTransaction().isActive()) {
+                    EManager.getInstance().getTransaction().rollback();
+                    clear();
+                }
+        } 
     }
     
     
     
-    public String verificarConsistenciaAlocacao (Date dataHoraInicio, Date dataHoraFim, int idSala){
-        int retornos = this.manager.createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList().size();
-        if (retornos == 0) {
-            return "validado";
+    public static String verificarConsistenciaAlocacao (Date dataHoraInicio, Date dataHoraFim, int idSala){
+        try {
+            int retornos = EManager.getInstance().createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList().size();
+            if (retornos == 0) {
+                clear();
+                return "validado";
+            }
+            else {
+                clear();
+                return "invalido";
+            }
+            
         }
-        else {
-            return "invalido";
-        }
+        catch (Exception e) {
+            clear();
+            return null;
+        } 
     }
 //
-//    public void modificaUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.merge(usuario);
-//            this.manager.getTransaction().commit();
+//    public static void modificaUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().merge(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 //
-//    public void excluirUsuario(Usuario usuario) {
-//        synchronized (this.operationLock) {
-//            this.manager.getTransaction().begin();
-//            this.manager.remove(usuario);
-//            this.manager.getTransaction().commit();
+//    public static void excluirUsuario(Usuario usuario) {
+//        synchronized () {
+//            EManager.getInstance().getTransaction().begin();
+//            EManager.getInstance().remove(usuario);
+//            EManager.getInstance().getTransaction().commit();
 //        }
 //    }
 }

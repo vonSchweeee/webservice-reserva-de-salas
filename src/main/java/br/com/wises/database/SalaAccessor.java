@@ -1,5 +1,6 @@
 package br.com.wises.database;
 
+import static br.com.wises.database.DbAccessor.clear;
 import br.com.wises.database.pojo.AlocacaoSala;
 import br.com.wises.database.pojo.Organizacao;
 import br.com.wises.database.pojo.Sala;
@@ -17,30 +18,36 @@ import org.joda.time.DateTime;
 
 public class SalaAccessor {
 
-    private final EntityManager manager;
-    private final Object operationLock;
 
-    public SalaAccessor(EntityManager manager, Object operationLock) {
-        this.manager = manager;
-        this.operationLock = operationLock;
+
+    public SalaAccessor() {
+
     }
 
-    public List<Sala> getAllSalas() {
-        return this.manager.createNamedQuery("Sala.findAll").getResultList();
+   public static List<Sala> getAllSalas() {
+        List<Sala> lista = EManager.getInstance().createNamedQuery("Sala.findAll").getResultList();
+        clear();
+        return lista;
     }
 
-    public List<Sala> getSalasByOrganizacaoId(int id) {
+    public static List<Sala> getSalasByOrganizacaoId(int id) {
         try {
-            return this.manager.createNamedQuery("Sala.findByOrganizacaoId").setParameter("idOrganizacao", id).getResultList();
+            List<Sala> lista = EManager.getInstance().createNamedQuery("Sala.findByOrganizacaoId").setParameter("idOrganizacao", id).getResultList();
+            clear();
+            return lista;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }
     
-    public Sala getSalaById(int id) {
+    public static Sala getSalaById(int id) {
         try {
-            return (Sala) this.manager.createNamedQuery("Sala.findById").setParameter("id", id).getSingleResult();
+            Sala s = (Sala) EManager.getInstance().createNamedQuery("Sala.findById").setParameter("id", id).getSingleResult();
+            clear();
+            return s;
         } catch (NoResultException e) {
+            clear();
             return null;
         }
     }

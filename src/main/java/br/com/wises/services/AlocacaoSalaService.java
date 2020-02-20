@@ -5,7 +5,9 @@
  */
 package br.com.wises.services;
 
+import br.com.wises.database.AlocacaoSalaAccessor;
 import br.com.wises.database.EManager;
+import br.com.wises.database.SalaAccessor;
 import br.com.wises.database.pojo.AlocacaoSala;
 import br.com.wises.database.pojo.Organizacao;
 import br.com.wises.database.pojo.Usuario;
@@ -20,11 +22,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import org.json.JSONObject;
 import br.com.wises.database.pojo.Sala;
+import br.com.wises.database.pojo.Status;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.core.Response;
 
 /**
  *
@@ -38,13 +43,9 @@ public class AlocacaoSalaService {
     @Path("alocacoes")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
     public List<AlocacaoSala> getAllAlocacaoSalas() {
-        List<AlocacaoSala> lista = EManager.getInstance().getAlocacaoSalaAccessor().getAllAlocacaoSalas();
+        List<AlocacaoSala> lista = AlocacaoSalaAccessor.getAllAlocacaoSalas();
         for (int i = 0; i < lista.size(); i++) {
             lista.get(i).getIdSala().setAlocacaoSalaCollection(null);
-            lista.get(i).getIdUsuario().setAlocacaoSalaCollection(null);
-            lista.get(i).getIdUsuario().getIdOrganizacao().setSalaCollection(null);
-            lista.get(i).getIdSala().getIdOrganizacao().setSalaCollection(null);
-            lista.get(i).getIdUsuario().getIdOrganizacao().setUsuarioCollection(null);
         }
         return lista;
     }
@@ -59,18 +60,11 @@ public class AlocacaoSalaService {
             @HeaderParam("fimDiaEscolhido") String fimDiaEscolhido){
         
         if (authorization != null && authorization.equals("secret")) {
-            List<AlocacaoSala> lista = EManager.getInstance().getAlocacaoSalaAccessor().getAlocacaoSalasByIdSalaAndData(id, data, fimDiaEscolhido);
+            List<AlocacaoSala> lista = AlocacaoSalaAccessor.getAlocacaoSalasByIdSalaAndData(id, data, fimDiaEscolhido);
             for (int i = 0; i < lista.size(); i++) {
                 lista.get(i).getIdSala().setAlocacaoSalaCollection(null);
-                lista.get(i).getIdUsuario().setAlocacaoSalaCollection(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setSalaCollection(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setUsuarioCollection(null);
-                lista.get(i).getIdUsuario().setSenha(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setAtivo(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setCEP(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setDataCriacao(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setDataAlteracao(null);
-                lista.get(i).getIdUsuario().getIdOrganizacao().setDataAlteracao(null);
+                lista.get(i).getIdSala().getIdOrganizacao().setSalaCollection(null);
+                lista.get(i).getIdSala().getIdOrganizacao().setUsuarioCollection(null);
             }
             return lista;
         }
@@ -79,15 +73,10 @@ public class AlocacaoSalaService {
         }
     }
     
-    public String verificarConsistencia (Date inicio, Date fim, int idSala) {
-        String retorno = EManager.getInstance().getAlocacaoSalaAccessor().verificarConsistenciaAlocacao(inicio, fim, idSala);
-        return retorno;
-    }
-    
     @POST
     @Path("reservar")
     @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
-    public String createAlocacao(
+    public Response createAlocacao(
             @HeaderParam("novaAlocacao") String novaAlocacaoEncoded,
             @HeaderParam("authorization") String authorization) {
         if (authorization != null && authorization.equals("secret")) {
@@ -99,7 +88,7 @@ public class AlocacaoSalaService {
             String descricao = null;
             Date dataHoraInicio = null, dataHoraFim = null;
             if (userObj.has("idSala") && userObj.has("idUsuario") && userObj.has("descricao") && userObj.has("dataHoraInicio") && userObj.has("dataHoraFim")) {
-                SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
                 idSala = userObj.getInt("idSala");
                 idUsuario = userObj.getInt("idUsuario");
                 descricao = userObj.getString("descricao");
@@ -111,27 +100,31 @@ public class AlocacaoSalaService {
                     e.printStackTrace();
                 }
                 Sala sala = new Sala();
-                Usuario usuario = new Usuario();
                 try {
-                    usuario = EManager.getInstance().getUsuarioAccessor().getUserById(idUsuario);
-                    sala = EManager.getInstance().getSalaAccessor().getSalaById(idSala);
-                    if (usuario == null) {
-                        return "Erro ao realizar a alocação, o usuário informado não existe.";
-                    }
+                    sala = SalaAccessor.getSalaById(idSala);
                     if (sala == null) {
-                        return "Erro ao realizar a alocação, a sala informada não existe.";
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao realizar a alocação, a sala informada não existe."))
+                                .build();
                     }
-                    String validade = verificarConsistencia(dataHoraInicio, dataHoraFim, idSala);
+                    String validade = AlocacaoSalaAccessor.verificarConsistenciaAlocacao(dataHoraInicio, dataHoraFim, idSala);
                     if (! validade.equals("validado"))
                     {
-                        return "Alocação conflita em horário com outra alocação.";
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Alocação conflita em horário com outra alocação"))
+                                .build();
                     }
                 } catch (Exception e) {
-                    return e.getMessage();
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Erro ao criar a alocação."))
+                                .build();
                 }
                 
                 alocacao.setIdSala(sala);
-                alocacao.setIdUsuario(usuario);
+                alocacao.setIdUsuario(idUsuario);
                 alocacao.setDescricao(descricao);
                 alocacao.setDataHoraInicio(dataHoraInicio);
                 alocacao.setDataHoraFim(dataHoraFim);
@@ -140,19 +133,27 @@ public class AlocacaoSalaService {
                 c.setTime(date);
                 c.add(c.HOUR, -3);
                 date = c.getTime();
-
                 alocacao.setDataCriacao(date);
                 alocacao.setDataAlteracao(date);
                 alocacao.setAtivo(true);
 
 
-                EManager.getInstance().getAlocacaoSalaAccessor().novaAlocacao(alocacao, usuario);
-                return "Alocação realizada com sucesso";
+                AlocacaoSalaAccessor.novaAlocacao(alocacao);
+                        return Response
+                                .status(Response.Status.CREATED)
+                                .entity(new Status("Alocação conflita em horário com outra alocação"))
+                                .build();
             } else {
-                return "Dados incorretos.";
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Dados incorretos."))
+                                .build();
             }
         } else {
-            return "Token inválido.";
+                        return Response
+                                .status(Response.Status.FORBIDDEN)
+                                .entity(new Status("Token inválido."))
+                                .build();
         }
     }
     
@@ -166,9 +167,9 @@ public class AlocacaoSalaService {
         if (authorization != null && authorization.equals("secret")){
             try {
                 AlocacaoSala alocacao = new AlocacaoSala();
-                alocacao = EManager.getInstance().getAlocacaoSalaAccessor().getAlocacaoSalaById(id);
+                alocacao = AlocacaoSalaAccessor.getAlocacaoSalaById(id);
                 alocacao.setAtivo(false);
-                EManager.getInstance().getAlocacaoSalaAccessor().setAlocacaoInativa(alocacao);
+                AlocacaoSalaAccessor.setAlocacaoInativa(alocacao);
                 return "Alocação desativada com sucesso.";
             }
             catch (Exception e) {
