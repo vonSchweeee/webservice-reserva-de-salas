@@ -76,7 +76,38 @@ public class UsuarioService {
         }
     }
 
-    
+    @GET
+    @Path("usuariosorganizacao")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
+    public Response getUsuariosOrganizacao(
+            @HeaderParam("idOrganizacao") int idOrganizacao,
+            @HeaderParam("authorization") String authorization) {
+        if (authorization != null && authorization.equals("secret")) {
+            List<Usuario> usuarios = UsuarioAccessor.getUsuariosByOrganizacaoId(idOrganizacao);
+            if (usuarios != null) {
+                for (int i=0; i<usuarios.size() ; i++) {
+                    usuarios.get(i).getIdOrganizacao().setUsuarioCollection(null);
+                    usuarios.get(i).getIdOrganizacao().setSalaCollection(null);
+                    usuarios.get(i).getIdOrganizacao().setDataAlteracao(null);
+                    usuarios.get(i).getIdOrganizacao().setDataCriacao(null);
+                    usuarios.get(i).getIdOrganizacao().setAtivo(null);
+                    usuarios.get(i).setSenha(null);
+                }
+                return Response.ok(usuarios).build();
+            } else {
+                return Response
+                        .status(Response.Status.NOT_FOUND)
+                        .entity(new Status("Usuário não encontrado"))
+                        .type(MediaType.APPLICATION_JSON)
+                        .build();
+            }
+        } else {
+            return Response
+                    .status(Response.Status.FORBIDDEN)
+                    .entity(new Status("Request inválido"))
+                    .build();
+        }
+    }
 
 //    @GET
 //    @Path("loginOld")

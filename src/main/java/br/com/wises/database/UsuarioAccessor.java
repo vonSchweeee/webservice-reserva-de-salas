@@ -27,6 +27,12 @@ public class UsuarioAccessor {
         clear();
         return lista;
     }
+    
+    public static List<Usuario> getUsuariosByOrganizacaoId(int idOrganizacao) {
+        List<Usuario> listaUsuario =  EManager.getInstance().createNamedQuery("Usuario.findByOrganizacaoId").setParameter("idOrganizacao", idOrganizacao).getResultList();
+        clear();
+        return listaUsuario;
+    }
 
     public static Usuario getUserById(int id) {
         try {

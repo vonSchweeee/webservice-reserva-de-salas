@@ -19,10 +19,10 @@ import org.joda.time.DateTime;
 public class AlocacaoSalaAccessor {
 
 
-    public AlocacaoSalaAccessor(EntityManager manager, Object operationLock) {
+    public AlocacaoSalaAccessor() {
 
     }
-      public static void setAlocacaoInativa (AlocacaoSala alocacao) {
+      public static void alterarAlocacao (AlocacaoSala alocacao) {
         try {
             EManager.getInstance().getTransaction().begin();
             EManager.getInstance().merge(alocacao);
@@ -77,19 +77,19 @@ public class AlocacaoSalaAccessor {
     
     public static List<AlocacaoSala> getAlocacaoSalasByIdSalaAndData(int id, String dataRaw, String fimDiaRaw) {
         try {
-            SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd HH:ss:mm");
             Date data=null;
             Date dataFim=null;
             try {
-                data = formatoData.parse(dataRaw);
-                dataFim = formatoData.parse(fimDiaRaw);
+                data = formatoData.parse(dataRaw + " 00:00:00");
+                dataFim = formatoData.parse(fimDiaRaw + " 00:00:00");
             } catch (ParseException ex) {
                 Logger.getLogger(DbAccessor.class.getName()).log(Level.SEVERE, null, ex);
             }
             List<AlocacaoSala> l =  EManager.getInstance().createNamedQuery("AlocacaoSala.findBySalaIdDataHoraInicio").setParameter("idSala", id).setParameter("diaEscolhido", data, TemporalType.TIMESTAMP).setParameter("fimDiaEscolhido", dataFim, TemporalType.TIMESTAMP).getResultList();
             clear();
             return l;
-        } catch (NoResultException e) {
+        } catch (Exception e) {
             clear();
             return null;
         }

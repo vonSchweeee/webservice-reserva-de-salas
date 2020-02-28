@@ -8,6 +8,7 @@ package br.com.wises.services;
 import br.com.wises.database.AlocacaoSalaAccessor;
 import br.com.wises.database.EManager;
 import br.com.wises.database.SalaAccessor;
+import br.com.wises.database.UsuarioAccessor;
 import br.com.wises.database.pojo.AlocacaoSala;
 import br.com.wises.database.pojo.Organizacao;
 import br.com.wises.database.pojo.Usuario;
@@ -29,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.PUT;
 import javax.ws.rs.core.Response;
 
 /**
@@ -169,7 +171,7 @@ public class AlocacaoSalaService {
                 AlocacaoSala alocacao = new AlocacaoSala();
                 alocacao = AlocacaoSalaAccessor.getAlocacaoSalaById(id);
                 alocacao.setAtivo(false);
-                AlocacaoSalaAccessor.setAlocacaoInativa(alocacao);
+                AlocacaoSalaAccessor.alterarAlocacao(alocacao);
                 return "Alocação desativada com sucesso.";
             }
             catch (Exception e) {
@@ -179,8 +181,52 @@ public class AlocacaoSalaService {
         }
         else{
             return "Token inválido.";
-        }
+        }    
     }
-    
+    @PUT
+    @Path("alterar")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=utf-8")
+    public Response alterarAlocacao (
+    @HeaderParam("alocacaoAlterada") String alocacaoAlterada, 
+    @HeaderParam("authorization") String authorization){
+            if(authorization != null && authorization.equals("secret")){
+                try{
+                    SimpleDateFormat formatoDataHora = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    JSONObject alocacaoJson = new JSONObject(new String(Base64.getDecoder().decode(alocacaoAlterada.getBytes()), Charset.forName("UTF-8")));
+                    AlocacaoSala alocacao = new AlocacaoSala();
+                    alocacao.setId(alocacaoJson.getInt("id"));
+                    alocacao.setAtivo(Boolean.TRUE);
+                    alocacao.setDataHoraInicio(formatoDataHora.parse(alocacaoJson.getString("dataHoraInicio")));
+                    alocacao.setDataHoraFim(formatoDataHora.parse(alocacaoJson.getString("dataHoraFim")));
+                    alocacao.setDescricao(alocacaoJson.getString("descricao"));
+                    Sala sala = SalaAccessor.getSalaById(alocacaoJson.getInt("idSala"));
+                    alocacao.setIdSala(sala);
+                    int idUsuario = alocacaoJson.getInt("idUsuario");
+                    alocacao.setIdUsuario(idUsuario);
+                    Calendar c = Calendar.getInstance();
+                    Date dataAgora = c.getTime();
+                    alocacao.setDataCriacao(dataAgora);
+                    alocacao.setDataAlteracao(dataAgora);
+                  
+                    AlocacaoSalaAccessor.alterarAlocacao(alocacao);
+                         return Response
+                                .status(Response.Status.CREATED)
+                                .entity(new Status("Alocacação alterada com sucesso!"))
+                                .build();
+                }
+                catch(Exception e){
+                               return Response
+                                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                                .entity(new Status("Erro no servidor"))
+                                .build();
+                }
+            }
+            else {
+                return Response
+                                .status(Response.Status.FORBIDDEN)
+                                .entity(new Status("Token inválido."))
+                                .build();
+            }
+        }
 }
 
