@@ -36,13 +36,13 @@ CREATE TABLE `sala` (
 
 CREATE TABLE `usuario` (
  `id` int NOT NULL AUTO_INCREMENT,
- `id_organizacao` int DEFAULT NULL,
+ `idOrganizacao` int DEFAULT NULL,
  `nome` VARCHAR(45) DEFAULT NULL,
  `email` VARCHAR(100) DEFAULT NULL UNIQUE,
  `senha` VARCHAR(256) NOT NULL,
  `urlImagem` VARCHAR(300) DEFAULT NULL,
  PRIMARY KEY (`id`),
- FOREIGN KEY (`id_organizacao`) REFERENCES `organizacao` (`id`)
+ FOREIGN KEY (`idOrganizacao`) REFERENCES `organizacao` (`id`)
 );
 
 CREATE TABLE `alocacao_sala` (

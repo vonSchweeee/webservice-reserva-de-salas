@@ -1,3 +1,8 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package br.com.wises.database.pojo;
 
 import java.io.Serializable;
@@ -9,6 +14,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -19,6 +26,10 @@ import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+/**
+ *
+ * @author jvito
+ */
 @Entity
 @Table(name = "organizacao")
 @XmlRootElement
@@ -26,23 +37,21 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Organizacao.findAll", query = "SELECT o FROM Organizacao o"),
     @NamedQuery(name = "Organizacao.findById", query = "SELECT o FROM Organizacao o WHERE o.id = :id"),
     @NamedQuery(name = "Organizacao.findByNome", query = "SELECT o FROM Organizacao o WHERE o.nome = :nome"),
-    @NamedQuery(name = "Organizacao.findByIdOrganizacaoPai", query = "SELECT o FROM Organizacao o WHERE o.idOrganizacaoPai = :idOrganizacaoPai"),
     @NamedQuery(name = "Organizacao.findByTipoOrganizacao", query = "SELECT o FROM Organizacao o WHERE o.tipoOrganizacao = :tipoOrganizacao"),
     @NamedQuery(name = "Organizacao.findByDominio", query = "SELECT o FROM Organizacao o WHERE o.dominio = :dominio"),
     @NamedQuery(name = "Organizacao.findByAtivo", query = "SELECT o FROM Organizacao o WHERE o.ativo = :ativo"),
     @NamedQuery(name = "Organizacao.findByDataCriacao", query = "SELECT o FROM Organizacao o WHERE o.dataCriacao = :dataCriacao"),
     @NamedQuery(name = "Organizacao.findByDataAlteracao", query = "SELECT o FROM Organizacao o WHERE o.dataAlteracao = :dataAlteracao"),
-    @NamedQuery(name = "Organizacao.findDominioLike", query = "SELECT o FROM Organizacao o WHERE o.dominio LIKE :dominio ") })
+    @NamedQuery(name = "Organizacao.findByCep", query = "SELECT o FROM Organizacao o WHERE o.cep = :cep"),
+    @NamedQuery(name = "Organizacao.findDominioLike", query = "SELECT o FROM Organizacao o WHERE o.dominio LIKE :dominio ")})
 public class Organizacao implements Serializable {
-
-    @Column(name = "ativo")
-    private Boolean ativo;
+    
     @OneToMany(mappedBy = "idOrganizacao")
     private Collection<Sala> salaCollection;
 
     @OneToMany(mappedBy = "idOrganizacao")
     private Collection<Usuario> usuarioCollection;
-
+    
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,21 +61,26 @@ public class Organizacao implements Serializable {
     @Size(max = 45)
     @Column(name = "nome")
     private String nome;
-    @Column(name = "id_organizacao_pai")
-    private Integer idOrganizacaoPai;
-    @Column(name = "tipo_organizacao")
+    @Column(name = "tipoOrganizacao")
     private Character tipoOrganizacao;
     @Size(max = 64)
     @Column(name = "dominio")
     private String dominio;
+    @Column(name = "ativo")
+    private Boolean ativo;
     @Column(name = "dataCriacao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataCriacao;
     @Column(name = "dataAlteracao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataAlteracao;
-    @Column (name = "CEP")
-    private String CEP;
+    @Size(max = 9)
+    @Column(name = "CEP")
+    private String cep;
+    @OneToMany(mappedBy = "idOrganizacaoPai")
+    @JoinColumn(name = "idOrganizacaoPai", referencedColumnName = "id")
+    @ManyToOne
+    private Organizacao idOrganizacaoPai;
 
     public Organizacao() {
     }
@@ -91,14 +105,6 @@ public class Organizacao implements Serializable {
         this.nome = nome;
     }
 
-    public Integer getIdOrganizacaoPai() {
-        return idOrganizacaoPai;
-    }
-
-    public void setIdOrganizacaoPai(Integer idOrganizacaoPai) {
-        this.idOrganizacaoPai = idOrganizacaoPai;
-    }
-
     public Character getTipoOrganizacao() {
         return tipoOrganizacao;
     }
@@ -115,6 +121,30 @@ public class Organizacao implements Serializable {
         this.dominio = dominio;
     }
 
+    public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
+    @XmlTransient
+    public Collection<Usuario> getUsuarioCollection() {
+        return usuarioCollection;
+    }
+
+    public void setUsuarioCollection(Collection<Usuario> usuarioCollection) {
+        this.usuarioCollection = usuarioCollection;
+    }    
+
+    @XmlTransient
+    public Collection<Sala> getSalaCollection() {
+        return salaCollection;
+    }
+
+    public void setSalaCollection(Collection<Sala> salaCollection) {
+        this.salaCollection = salaCollection;
+    }
 
     public Date getDataCriacao() {
         return dataCriacao;
@@ -131,43 +161,25 @@ public class Organizacao implements Serializable {
     public void setDataAlteracao(Date dataAlteracao) {
         this.dataAlteracao = dataAlteracao;
     }
-    
-    public String getCEP() {
-        return CEP;
-    }
-    
-    public void setCEP(String CEP){
-        this.CEP = CEP;
+
+    public String getCep() {
+        return cep;
     }
 
-    @XmlTransient
-    public Collection<Usuario> getUsuarioCollection() {
-        return usuarioCollection;
+    public void setCep(String cep) {
+        this.cep = cep;
     }
 
-    public void setUsuarioCollection(Collection<Usuario> usuarioCollection) {
-        this.usuarioCollection = usuarioCollection;
+
+    public Organizacao getIdOrganizacaoPai() {
+        return idOrganizacaoPai;
     }
 
-    public Boolean getAtivo() {
-        return ativo;
+    public void setIdOrganizacaoPai(Organizacao idOrganizacaoPai) {
+        this.idOrganizacaoPai = idOrganizacaoPai;
     }
 
-    public void setAtivo(Boolean ativo) {
-        this.ativo = ativo;
-    }
-    
-
-    @XmlTransient
-    public Collection<Sala> getSalaCollection() {
-        return salaCollection;
-    }
-
-    public void setSalaCollection(Collection<Sala> salaCollection) {
-        this.salaCollection = salaCollection;
-    }
-    
-        @Override
+    @Override
     public int hashCode() {
         int hash = 0;
         hash += (id != null ? id.hashCode() : 0);
@@ -192,5 +204,4 @@ public class Organizacao implements Serializable {
         return "br.com.wises.database.pojo.Organizacao[ id=" + id + " ]";
     }
     
-
 }

@@ -37,8 +37,10 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Usuario.findByNome", query = "SELECT u FROM Usuario u WHERE u.nome = :nome"),
     @NamedQuery(name = "Usuario.findByEmail", query = "SELECT u FROM Usuario u WHERE u.email = :email"),
     @NamedQuery(name = "Usuario.findBySenha", query = "SELECT u FROM Usuario u WHERE u.senha = :senha"),
-    @NamedQuery(name = "Usuario.findByOrganizacaoId", query = "SELECT u FROM Usuario u JOIN u.idOrganizacao o WHERE o.id = :idOrganizacao")})
+    @NamedQuery(name = "Usuario.findByOrganizacaoId", query = "SELECT u FROM Usuario u JOIN u.idOrganizacao o WHERE o.id = :idOrganizacao"),
+    @NamedQuery(name = "Usuario.findByUrlImagem", query = "SELECT u FROM Usuario u WHERE u.urlImagem = :urlImagem")})
     @NamedQuery(name = "Usuario.findByEmailAndPassword", query = "SELECT u FROM Usuario u WHERE u.email = :email AND u.senha = :senha")
+    
 public class Usuario implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -57,11 +59,12 @@ public class Usuario implements Serializable {
     @Size(max = 256)
     @Column(name = "senha", nullable=false)
     private String senha;
-    @JoinColumns({
-        @JoinColumn(name = "id_organizacao", referencedColumnName = "id"),
-        @JoinColumn(name = "id_organizacao", referencedColumnName = "id")})
+    @JoinColumn(name = "idOrganizacao", referencedColumnName = "id")
     @ManyToOne
     private Organizacao idOrganizacao;
+    @Size(max = 300)
+    @Column(name = "urlImagem")
+    private String urlImagem;
 
     public Usuario() {
     }
@@ -108,6 +111,14 @@ public class Usuario implements Serializable {
 
     public void setIdOrganizacao(Organizacao idOrganizacao) {
         this.idOrganizacao = idOrganizacao;
+    }
+    
+    public String getUrlImagem() {
+        return urlImagem;
+    }
+
+    public void setUrlImagem(String urlImagem) {
+        this.urlImagem = urlImagem;
     }
 
     @Override

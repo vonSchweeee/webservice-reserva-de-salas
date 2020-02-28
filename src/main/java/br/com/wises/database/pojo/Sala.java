@@ -92,7 +92,7 @@ public class Sala implements Serializable {
     private String urlImagem;
     @OneToMany(mappedBy = "idSala")
     private Collection<AlocacaoSala> alocacaoSalaCollection;
-    @JoinColumn(name = "id_organizacao", referencedColumnName = "id")
+    @JoinColumn(name = "idOrganizacao", referencedColumnName = "id")
     @ManyToOne
     private Organizacao idOrganizacao;
 

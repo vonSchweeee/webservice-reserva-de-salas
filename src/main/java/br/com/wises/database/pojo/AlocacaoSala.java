@@ -69,10 +69,10 @@ public class AlocacaoSala implements Serializable {
     @Column(name = "dataAlteracao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataAlteracao;
-    @JoinColumn(name = "id_sala", referencedColumnName = "id")
+    @JoinColumn(name = "idSala", referencedColumnName = "id")
     @ManyToOne
     private Sala idSala;
-    @Column(name = "id_usuario")
+    @Column(name = "idUsuario")
     private int idUsuario;
     
     
