@@ -77,10 +77,8 @@ public class Organizacao implements Serializable {
     @Size(max = 9)
     @Column(name = "CEP")
     private String cep;
-    @OneToMany(mappedBy = "idOrganizacaoPai")
-    @JoinColumn(name = "idOrganizacaoPai", referencedColumnName = "id")
-    @ManyToOne
-    private Organizacao idOrganizacaoPai;
+    @Column(name = "idOrganizacaoPai")
+    private Integer idOrganizacaoPai;
 
     public Organizacao() {
     }
@@ -171,11 +169,11 @@ public class Organizacao implements Serializable {
     }
 
 
-    public Organizacao getIdOrganizacaoPai() {
+    public Integer getIdOrganizacaoPai() {
         return idOrganizacaoPai;
     }
 
-    public void setIdOrganizacaoPai(Organizacao idOrganizacaoPai) {
+    public void setIdOrganizacaoPai(Integer idOrganizacaoPai) {
         this.idOrganizacaoPai = idOrganizacaoPai;
     }
 
