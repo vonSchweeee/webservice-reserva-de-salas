@@ -207,7 +207,16 @@ public class AlocacaoSalaService {
                     Date dataAgora = c.getTime();
                     alocacao.setDataCriacao(dataAgora);
                     alocacao.setDataAlteracao(dataAgora);
-                  
+                    
+                    String validade = AlocacaoSalaAccessor.verificarConsistenciaAlocacao(alocacao.getDataHoraInicio(), alocacao.getDataHoraFim(), alocacao.getId());
+                    if (! validade.equals("validado"))
+                    {
+                        return Response
+                                .status(Response.Status.BAD_REQUEST)
+                                .entity(new Status("Alocação conflita em horário com outra alocação"))
+                                .build();
+                    }
+                    
                     AlocacaoSalaAccessor.alterarAlocacao(alocacao);
                          return Response
                                 .status(Response.Status.CREATED)
