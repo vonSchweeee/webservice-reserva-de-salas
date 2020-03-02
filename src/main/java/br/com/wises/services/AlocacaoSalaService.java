@@ -208,7 +208,7 @@ public class AlocacaoSalaService {
                     alocacao.setDataCriacao(dataAgora);
                     alocacao.setDataAlteracao(dataAgora);
                     
-                    String validade = AlocacaoSalaAccessor.verificarConsistenciaAlocacao(alocacao.getDataHoraInicio(), alocacao.getDataHoraFim(), alocacao.getId());
+                    String validade = AlocacaoSalaAccessor.verificarConsistenciaAlocacao(alocacao.getDataHoraInicio(), alocacao.getDataHoraFim(), alocacao.getIdSala().getId());
                     if (! validade.equals("validado"))
                     {
                         return Response
