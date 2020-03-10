@@ -130,6 +130,16 @@ public class AlocacaoSalaAccessor {
             return null;
         } 
     }
+    public static List<AlocacaoSala> verificarConsistenciaAlocacaoAlterar (Date dataHoraInicio, Date dataHoraFim, int idSala){
+        try {
+            List<AlocacaoSala> retornos = EManager.getInstance().createNamedQuery("AlocacaoSala.verificarConsistencia").setParameter("idSala", idSala).setParameter("dataHoraInicio", dataHoraInicio, TemporalType.TIMESTAMP).setParameter("dataHoraFim", dataHoraFim, TemporalType.TIMESTAMP).getResultList();
+            return retornos;
+        }
+        catch (Exception e) {
+            clear();
+            return null;
+        } 
+    }
 //
 //    public static void modificaUsuario(Usuario usuario) {
 //        synchronized () {

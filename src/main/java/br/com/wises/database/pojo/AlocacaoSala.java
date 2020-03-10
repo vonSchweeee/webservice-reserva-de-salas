@@ -52,10 +52,10 @@ public class AlocacaoSala implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Integer id;
-    @Column(name = "dataHoraInicio")
+    @Column(name = "data_hora_inicio")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataHoraInicio;
-    @Column(name = "dataHoraFim")
+    @Column(name = "data_hora_fim")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataHoraFim;
     @Size(max = 45)
@@ -63,16 +63,16 @@ public class AlocacaoSala implements Serializable {
     private String descricao;
     @Column(name = "ativo")
     private Boolean ativo;
-    @Column(name = "dataCriacao")
+    @Column(name = "data_criacao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataCriacao;
-    @Column(name = "dataAlteracao")
+    @Column(name = "data_alteracao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataAlteracao;
-    @JoinColumn(name = "idSala", referencedColumnName = "id")
+    @JoinColumn(name = "id_sala", referencedColumnName = "id")
     @ManyToOne
     private Sala idSala;
-    @Column(name = "idUsuario")
+    @Column(name = "id_usuario")
     private int idUsuario;
     
     

@@ -61,23 +61,23 @@ public class Organizacao implements Serializable {
     @Size(max = 45)
     @Column(name = "nome")
     private String nome;
-    @Column(name = "tipoOrganizacao")
+    @Column(name = "tipo_organizacao")
     private Character tipoOrganizacao;
     @Size(max = 64)
     @Column(name = "dominio")
     private String dominio;
     @Column(name = "ativo")
     private Boolean ativo;
-    @Column(name = "dataCriacao")
+    @Column(name = "data_criacao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataCriacao;
-    @Column(name = "dataAlteracao")
+    @Column(name = "data_alteracao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataAlteracao;
     @Size(max = 9)
-    @Column(name = "CEP")
+    @Column(name = "cep")
     private String cep;
-    @Column(name = "idOrganizacaoPai")
+    @Column(name = "id_organizacao_pai")
     private Integer idOrganizacaoPai;
 
     public Organizacao() {

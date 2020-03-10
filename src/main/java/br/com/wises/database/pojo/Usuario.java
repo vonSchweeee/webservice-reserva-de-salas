@@ -59,11 +59,11 @@ public class Usuario implements Serializable {
     @Size(max = 256)
     @Column(name = "senha", nullable=false)
     private String senha;
-    @JoinColumn(name = "idOrganizacao", referencedColumnName = "id")
+    @JoinColumn(name = "id_organizacao", referencedColumnName = "id")
     @ManyToOne
     private Organizacao idOrganizacao;
     @Size(max = 300)
-    @Column(name = "urlImagem")
+    @Column(name = "url_imagem")
     private String urlImagem;
 
     public Usuario() {

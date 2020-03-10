@@ -63,14 +63,14 @@ public class Sala implements Serializable {
     @Size(max = 45)
     @Column(name = "nome")
     private String nome;
-    @Column(name = "quantidadePessoasSentadas")
+    @Column(name = "lugares_disponiveis")
     private Integer quantidadePessoasSentadas;
-    @Column(name = "possuiMultimidia")
+    @Column(name = "possui_multimidia")
     private Boolean possuiMultimidia;
-    @Column(name = "possuiAC")
+    @Column(name = "possui_ac")
     private Boolean possuiAC;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "areaDaSala")
+    @Column(name = "area_sala")
     private BigDecimal areaDaSala;
     @Size(max = 64)
     @Column(name = "localizacao")
@@ -81,18 +81,18 @@ public class Sala implements Serializable {
     private Double longitude;
     @Column(name = "ativo")
     private Boolean ativo;
-    @Column(name = "dataCriacao")
+    @Column(name = "data_criacao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataCriacao;
-    @Column(name = "dataAlteracao")
+    @Column(name = "data_alteracao")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dataAlteracao;
     @Size(max = 300)
-    @Column(name = "urlImagem")
+    @Column(name = "url_imagem")
     private String urlImagem;
     @OneToMany(mappedBy = "idSala")
     private Collection<AlocacaoSala> alocacaoSalaCollection;
-    @JoinColumn(name = "idOrganizacao", referencedColumnName = "id")
+    @JoinColumn(name = "id_organizacao", referencedColumnName = "id")
     @ManyToOne
     private Organizacao idOrganizacao;
 

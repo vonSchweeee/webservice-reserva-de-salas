@@ -208,13 +208,21 @@ public class AlocacaoSalaService {
                     alocacao.setDataCriacao(dataAgora);
                     alocacao.setDataAlteracao(dataAgora);
                     
-                    String validade = AlocacaoSalaAccessor.verificarConsistenciaAlocacao(alocacao.getDataHoraInicio(), alocacao.getDataHoraFim(), alocacao.getIdSala().getId());
-                    if (! validade.equals("validado"))
+                    List<AlocacaoSala> alocacoes = AlocacaoSalaAccessor.verificarConsistenciaAlocacaoAlterar(alocacao.getDataHoraInicio(), alocacao.getDataHoraFim(), alocacao.getIdSala().getId());
+                    Boolean conflitaComSiMesma = false;
+                    if (alocacoes.size() >= 1)
                     {
-                        return Response
-                                .status(Response.Status.BAD_REQUEST)
-                                .entity(new Status("Alocação conflita em horário com outra alocação"))
-                                .build();
+                        for (int i = 0; i < alocacoes.size(); i++){
+                            if (alocacoes.get(i).getId().equals(alocacao.getId())){
+                                conflitaComSiMesma = true;
+                            }
+                        }
+                        if(! conflitaComSiMesma) {
+                            return Response
+                                    .status(Response.Status.BAD_REQUEST)
+                                    .entity(new Status("Alocação conflita em horário com outra alocação"))
+                                    .build();
+                        }
                     }
                     
                     AlocacaoSalaAccessor.alterarAlocacao(alocacao);
